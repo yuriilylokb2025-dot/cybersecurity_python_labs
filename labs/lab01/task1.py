@@ -12,7 +12,7 @@ passwords = [
     "Defens3#2023",
     "abc123",
     "Elit3@Secur",
-    "demo"
+    "demo",
 ]
 
 criteria = {
@@ -28,14 +28,9 @@ forbidden_passwords = {
     "login",
     "demo",
     "abc123",
-    "user"
+    "user",
 }
 
-random_indexes = random.sample(range(len(passwords)),3)
-
-
-for index in random_indexes:
-    passwords.append(passwords[index])
 
 def check_password(password):
     min_length = criteria["min_length"]
@@ -52,31 +47,42 @@ def check_password(password):
 
     if all_requirements:
         if len(password) >= min_length + 4 and passwords.count(password) == 1:
-            return ("Дуже сильний")
+            return "Дуже сильний"
 
         return "Сильний"
-
 
     completed_groups = sum([
         has_digit,
         has_upper,
         has_lower,
-        has_special
+        has_special,
     ])
+
     if completed_groups <= 1:
         return "Слабкий"
 
     return "Середній"
 
-print(f"Студент: {STUDENT_NAME}")
-print(f"Варіант: {VARIANT_NUMBER}")
 
-print("-" * 48)
-print(f"{'№':<4}{'Пароль':<22}{'Рівень надійності'}")
-print("-" * 48)
+def main():
+    random_indexes = random.sample(range(len(passwords)), 3)
 
-for number, password in enumerate(passwords, start=1):
-    reliability = check_password(password)
-    print(f"{number:<4}{password:<22}{reliability}")
-print("-" * 48)
+    for index in random_indexes:
+        passwords.append(passwords[index])
 
+    print(f"Студент: {STUDENT_NAME}")
+    print(f"Варіант: {VARIANT_NUMBER}")
+
+    print("-" * 48)
+    print(f"{'№':<4}{'Пароль':<22}{'Рівень надійності'}")
+    print("-" * 48)
+
+    for number, password in enumerate(passwords, start=1):
+        reliability = check_password(password)
+        print(f"{number:<4}{password:<22}{reliability}")
+
+    print("-" * 48)
+
+
+if __name__ == "__main__":
+    main()
