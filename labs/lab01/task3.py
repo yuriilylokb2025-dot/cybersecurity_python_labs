@@ -242,8 +242,7 @@ def main():
         except ValidationError as error:
             print(f"{username}: {error}")
 
-        except (OSError, PermissionError):
-            return
+
 
 
 if __name__ == "__main__":
