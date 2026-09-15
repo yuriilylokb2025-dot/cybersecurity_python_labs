@@ -15,8 +15,10 @@ DATA_FOLDER = Path(__file__).parent / "data"
 USERS_FILE = DATA_FOLDER / "users.csv"
 LOG_FILE = DATA_FOLDER / "log.json"
 
+
 class ValidationError(Exception):
     pass
+
 
 def generate_hash(password: str, salt: str = "00000") -> str:
     if password is None or password == "":
@@ -34,6 +36,7 @@ def generate_hash(password: str, salt: str = "00000") -> str:
 
     return hashlib.sha1(text.encode("utf-8")).hexdigest()
 
+
 users_to_register = (
     ("admin", "Admin123!"),
     ("yura", "Yura2026!"),
@@ -47,6 +50,7 @@ users_to_register = (
     ("tester", "Test5678#"),
 )
 
+
 def create_user(username, password):
     if username is None or username == "":
         raise ValueError("Логін не може бути порожнім")
@@ -55,27 +59,52 @@ def create_user(username, password):
 
     return username, password_hash
 
+
 def create_users(users_list):
-    DATA_FOLDER.mkdir(parents=True, exist_ok=True)
+    try:
+        DATA_FOLDER.mkdir(parents=True, exist_ok=True)
 
-    with USERS_FILE.open("w", newline="", encoding="utf-8") as file:
-        writer = csv.writer(file)
+        with USERS_FILE.open("w", newline="", encoding="utf-8") as file:
+            writer = csv.writer(file)
 
-        for username, password in users_list:
-            user = create_user(username, password)
-            writer.writerow(user)
+            for username, password in users_list:
+                user = create_user(username, password)
+                writer.writerow(user)
+
+    except PermissionError:
+        print("Помилка: немає дозволу на запис у users.csv")
+        raise
+
+    except OSError as error:
+        print(f"Помилка запису users.csv: {error}")
+        raise
+
 
 def read_users():
     users = []
 
-    with USERS_FILE.open("r", newline="", encoding="utf-8") as file:
-        reader = csv.reader(file)
+    try:
+        with USERS_FILE.open("r", newline="", encoding="utf-8") as file:
+            reader = csv.reader(file)
 
-        for row in reader:
-            if len(row) == 2:
-                users.append((row[0], row[1]))
+            for row in reader:
+                if len(row) == 2:
+                    users.append((row[0], row[1]))
+
+    except FileNotFoundError:
+        print("Помилка: файл users.csv не знайдено")
+        raise
+
+    except PermissionError:
+        print("Помилка: немає дозволу на читання users.csv")
+        raise
+
+    except OSError as error:
+        print(f"Помилка читання users.csv: {error}")
+        raise
 
     return users
+
 
 def print_users(users):
     print("\nБаза користувачів:")
@@ -88,60 +117,55 @@ def print_users(users):
 
     print("-" * 60)
 
+
 def save_log(event):
-    DATA_FOLDER.mkdir(parents=True, exist_ok=True)
-
     try:
-        with LOG_FILE.open("r", encoding="utf-8") as file:
-            events = json.load(file)
-    except FileNotFoundError:
-        events = []
+        DATA_FOLDER.mkdir(parents=True, exist_ok=True)
 
-    events.append(event)
+        try:
+            with LOG_FILE.open("r", encoding="utf-8") as file:
+                events = json.load(file)
 
-    with LOG_FILE.open("w", encoding="utf-8") as file:
-        json.dump(events, file, ensure_ascii=False, indent=4)
+        except (FileNotFoundError, json.JSONDecodeError):
+            events = []
+
+        events.append(event)
+
+        with LOG_FILE.open("w", encoding="utf-8") as file:
+            json.dump(events, file, ensure_ascii=False, indent=4)
+
+    except PermissionError:
+        print("Помилка: немає дозволу на роботу з log.json")
+        raise
+
+    except OSError as error:
+        print(f"Помилка роботи з log.json: {error}")
+        raise
+
 
 def log_event(function):
-
     @wraps(function)
-
     def wrapper(*args, **kwargs):
-
         if len(args) > 0:
-
             username = args[0]
-
         else:
-
             username = kwargs.get("username", "")
 
         try:
-
             result = function(*args, **kwargs)
 
             if result:
-
                 login_result = "success"
-
             else:
-
                 login_result = "failure"
 
             event = {
-
                 "event": "login",
-
                 "user": username,
-
                 "result": login_result,
-
                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-
                 "args": [],
-
                 "kwargs": {}
-
             }
 
             save_log(event)
@@ -163,6 +187,7 @@ def log_event(function):
             raise
 
     return wrapper
+
 
 users_db = []
 
@@ -189,46 +214,37 @@ def main():
 
     try:
         create_users(users_to_register)
-
         users_db = read_users()
 
-        print_users(users_db)
+    except (OSError, FileNotFoundError, PermissionError):
+        return
 
-        login_attempts = (
-            ("yura", "Yura2026!"),
-            ("admin", "WrongPass1!"),
-            ("unknown", "Unknown123!"),
-        )
+    print_users(users_db)
 
-        print("\nРезультати входу:")
+    login_attempts = (
+        ("yura", "Yura2026!"),
+        ("admin", "WrongPass1!"),
+        ("unknown", "Unknown123!"),
+    )
 
-        for username, password in login_attempts:
-            try:
-                if login(username, password):
-                    print(f"{username}: вхід успішний")
-                else:
-                    print(f"{username}: неправильний логін або пароль")
+    print("\nРезультати входу:")
 
-            except ValueError as error:
-                print(f"{username}: {error}")
+    for username, password in login_attempts:
+        try:
+            if login(username, password):
+                print(f"{username}: вхід успішний")
+            else:
+                print(f"{username}: неправильний логін або пароль")
 
-            except ValidationError as error:
-                print(f"{username}: {error}")
+        except ValueError as error:
+            print(f"{username}: {error}")
 
-    except FileNotFoundError:
-        print("Помилка: файл не знайдено")
+        except ValidationError as error:
+            print(f"{username}: {error}")
 
-    except PermissionError:
-        print("Помилка: немає дозволу на роботу з файлом")
+        except (OSError, PermissionError):
+            return
 
-    except OSError as error:
-        print(f"Помилка роботи з файлом: {error}")
-
-    except ValidationError as error:
-        print(f"Помилка перевірки даних: {error}")
-
-    except ValueError as error:
-        print(f"Помилка значення: {error}")
 
 if __name__ == "__main__":
     main()
