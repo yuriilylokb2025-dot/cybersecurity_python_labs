@@ -51,12 +51,14 @@ def check_password(password):
 
         return "Сильний"
 
-    completed_groups = sum([
-        has_digit,
-        has_upper,
-        has_lower,
-        has_special,
-    ])
+    completed_groups = sum(
+        [
+            has_digit,
+            has_upper,
+            has_lower,
+            has_special,
+        ]
+    )
 
     if completed_groups <= 1:
         return "Слабкий"

@@ -20,11 +20,25 @@ class FirewallRule:
 def load_rules(file_path: str) -> list[FirewallRule]:
     path = Path(file_path)
 
-    if not path.exists():
-        raise FileNotFoundError(f"Файл не знайдено: {file_path}")
+    try:
+        with path.open("r", encoding="utf-8") as file:
+            data = json.load(file)
 
-    with path.open("r", encoding="utf-8") as file:
-        data = json.load(file)
+    except FileNotFoundError:
+        print(f"Помилка: файл {file_path} не знайдено")
+        raise
+
+    except PermissionError:
+        print(f"Помилка: немає дозволу на читання {file_path}")
+        raise
+
+    except json.JSONDecodeError as error:
+        print(f"Помилка JSON: {error}")
+        raise
+
+    except OSError as error:
+        print(f"Помилка читання файлу: {error}")
+        raise
 
     rules = []
 
@@ -130,12 +144,30 @@ def save_rules_to_json(
 
     path = Path(output_path)
 
-    with path.open("w", encoding="utf-8") as file:
-        json.dump(data, file, indent=4, ensure_ascii=False)
+    try:
+        with path.open("w", encoding="utf-8") as file:
+            json.dump(
+                data,
+                file,
+                indent=4,
+                ensure_ascii=False,
+            )
+
+    except PermissionError:
+        print(f"Помилка: немає дозволу на запис у {output_path}")
+        raise
+
+    except OSError as error:
+        print(f"Помилка запису файлу: {error}")
+        raise
 
 
 def setup_logging(log_level: str) -> None:
-    level = getattr(logging, log_level.upper(), logging.INFO)
+    level = getattr(
+        logging,
+        log_level.upper(),
+        logging.INFO,
+    )
 
     logging.basicConfig(
         level=level,

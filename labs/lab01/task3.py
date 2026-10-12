@@ -165,7 +165,7 @@ def log_event(function):
                 "result": login_result,
                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "args": [],
-                "kwargs": {}
+                "kwargs": {},
             }
 
             save_log(event)
@@ -179,7 +179,7 @@ def log_event(function):
                 "result": "failure",
                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "args": [],
-                "kwargs": {}
+                "kwargs": {},
             }
 
             save_log(event)
@@ -243,14 +243,5 @@ def main():
             print(f"{username}: {error}")
 
 
-
-
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-

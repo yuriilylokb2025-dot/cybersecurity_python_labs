@@ -80,10 +80,7 @@ def main():
     for resource_name, resource_level in resources:
         level_name = security_levels[resource_level - 1]
 
-        print(
-            f"resource={resource_name}, "
-            f"security_level={level_name}"
-        )
+        print(f"resource={resource_name}, security_level={level_name}")
 
     print("\nAccess check:")
 
@@ -92,16 +89,9 @@ def main():
             result, reason = check_access(username, resource_level)
 
             if result == "ALLOW":
-                print(
-                    f"user={username} "
-                    f"resource={resource_name} -> ALLOW"
-                )
+                print(f"user={username} resource={resource_name} -> ALLOW")
             else:
-                print(
-                    f"user={username} "
-                    f"resource={resource_name} "
-                    f"-> DENY ({reason})"
-                )
+                print(f"user={username} resource={resource_name} -> DENY ({reason})")
 
 
 if __name__ == "__main__":
