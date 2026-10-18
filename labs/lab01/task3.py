@@ -1,7 +1,7 @@
 import csv
 import hashlib
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from functools import wraps
 from pathlib import Path
 
@@ -163,7 +163,7 @@ def log_event(function):
                 "event": "login",
                 "user": username,
                 "result": login_result,
-                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
                 "args": [],
                 "kwargs": {},
             }
@@ -177,7 +177,7 @@ def log_event(function):
                 "event": "login",
                 "user": username,
                 "result": "failure",
-                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
                 "args": [],
                 "kwargs": {},
             }
